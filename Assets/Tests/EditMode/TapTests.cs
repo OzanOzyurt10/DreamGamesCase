@@ -33,7 +33,7 @@ namespace DreamCase.Tests
         [Test]
         public void ValidTapRemovesTheGroupAndSpendsOneMove()
         {
-            var session = new LevelSession(CreateBoard(), moveCount: 5);
+            var session = TestBoards.Session(CreateBoard(), moveCount: 5);
 
             var result = session.TryTap(new GridPosition(1, 0));
 
@@ -48,7 +48,7 @@ namespace DreamCase.Tests
         [Test]
         public void TapOnALonelyCubeDoesNothing()
         {
-            var session = new LevelSession(CreateBoard(), moveCount: 5);
+            var session = TestBoards.Session(CreateBoard(), moveCount: 5);
 
             var result = session.TryTap(new GridPosition(2, 2));
 
@@ -60,7 +60,7 @@ namespace DreamCase.Tests
         [Test]
         public void TapOnAnObstacleOrOutsideTheBoardDoesNothing()
         {
-            var session = new LevelSession(TestBoards.FromRows("s r r"), moveCount: 5);
+            var session = TestBoards.Session(TestBoards.FromRows("s r r"), moveCount: 5);
 
             Assert.IsNull(session.TryTap(new GridPosition(0, 0)));
             Assert.IsNull(session.TryTap(new GridPosition(-1, 0)));
@@ -71,7 +71,7 @@ namespace DreamCase.Tests
         [Test]
         public void NoTapIsAcceptedWithoutMovesLeft()
         {
-            var session = new LevelSession(TestBoards.FromRows("r r"), moveCount: 0);
+            var session = TestBoards.Session(TestBoards.FromRows("r r"), moveCount: 0);
 
             Assert.IsNull(session.TryTap(new GridPosition(0, 0)));
             Assert.IsFalse(session.Board.IsEmpty(new GridPosition(0, 0)));

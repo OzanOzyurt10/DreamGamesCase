@@ -5,5 +5,6 @@ namespace DreamCase.Core.Items
     {
         public override int Width => 2;
         public override int Height => 2;
+        public override bool CanFall => false;
     }
 }

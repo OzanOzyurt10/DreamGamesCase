@@ -15,8 +15,10 @@ namespace DreamCase.View
         [SerializeField] private Camera worldCamera;
         [SerializeField] private ItemViewFactory itemViewFactory;
         [SerializeField] private SpriteRenderer frame;
+        [SerializeField] private SpriteMask itemMask;
         [SerializeField] private Transform itemsRoot;
 
+        [Header("Layout")]
         [Tooltip("Part of the screen height kept free at the top for the goal / move panel.")]
         [SerializeField, Range(0f, 0.5f)] private float topReservedFraction = 0.2f;
 
@@ -26,7 +28,16 @@ namespace DreamCase.View
         [Tooltip("Thickness of the frame around the cells, in cells.")]
         [SerializeField, Range(0f, 1f)] private float framePaddingInCells = 0.15f;
 
+        [Header("Animation")]
         [SerializeField] private float blastDuration = 0.2f;
+
+        [Tooltip("Time to fall one cell. Longer falls take longer, growing with the square root of the distance like real gravity.")]
+        [SerializeField] private float fallDurationPerCell = 0.12f;
+
+        [Tooltip("How high an item bounces after landing, in cells.")]
+        [SerializeField] private float landingBounceInCells = 0.08f;
+
+        [SerializeField] private float landingBounceDuration = 0.12f;
 
         private readonly Dictionary<Item, ItemView> views = new Dictionary<Item, ItemView>();
         private BoardLayout layout;
@@ -38,15 +49,15 @@ namespace DreamCase.View
             frame.transform.position = layout.Center;
             frame.size = layout.FrameSize;
 
+            itemMask.transform.position = layout.Center;
+            Vector2 maskSpriteSize = itemMask.sprite.bounds.size;
+            itemMask.transform.localScale = new Vector3(
+                layout.FrameSize.x / maskSpriteSize.x,
+                layout.FrameSize.y / maskSpriteSize.y,
+                1f);
+
             foreach (var item in board.Items)
-            {
-                var view = itemViewFactory.Create(item, itemsRoot);
-                view.transform.position = layout.ItemCenter(item);
-                view.FitWidth(item.Width * layout.CellSize);
-                // Higher rows draw on top, so a cube's bottom edge overlaps the cube below it.
-                view.SetSortingOrder(item.Position.Y);
-                views.Add(item, view);
-            }
+                CreateView(item, layout.ItemCenter(item));
         }
 
         public GridPosition WorldToCell(Vector2 worldPosition) => layout.WorldToCell(worldPosition);
@@ -71,6 +82,42 @@ namespace DreamCase.View
                     itemViewFactory.Release(item, view);
             });
             return sequence;
+        }
+
+        /// <summary>Drops fallen items to their new cells and new cubes in from above the board, all at once.</summary>
+        public Tween AnimateFalls(FallResult result)
+        {
+            var sequence = DOTween.Sequence();
+
+            foreach (var fall in result.Falls)
+                sequence.Join(PlayFall(views[fall.Item], fall));
+
+            foreach (var spawn in result.Spawns)
+                sequence.Join(PlayFall(CreateView(spawn.Item, layout.CellCenter(spawn.From)), spawn));
+
+            return sequence;
+        }
+
+        private ItemView CreateView(Item item, Vector2 worldPosition)
+        {
+            var view = itemViewFactory.Create(item, itemsRoot);
+            view.transform.position = worldPosition;
+            view.FitWidth(item.Width * layout.CellSize);
+            // Higher rows draw on top, so a cube's bottom edge overlaps the cube below it.
+            view.SetSortingOrder(item.Position.Y);
+            views.Add(item, view);
+            return view;
+        }
+
+        private Tween PlayFall(ItemView view, ItemFall fall)
+        {
+            view.SetSortingOrder(fall.To.Y);
+            int distance = fall.From.Y - fall.To.Y;
+            return view.PlayFall(
+                layout.CellCenter(fall.To),
+                fallDurationPerCell * Mathf.Sqrt(distance),
+                landingBounceInCells * layout.CellSize,
+                landingBounceDuration);
         }
 
         /// <summary>The world-space rectangle the board may use: the screen minus margins and the top panel.</summary>

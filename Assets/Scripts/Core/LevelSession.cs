@@ -7,13 +7,16 @@ namespace DreamCase.Core
     {
         private const int MinBlastGroupSize = 2;
 
+        private readonly ItemFactory itemFactory;
+
         public Board Board { get; }
         public int MovesLeft { get; private set; }
 
-        public LevelSession(Board board, int moveCount)
+        public LevelSession(Board board, int moveCount, ItemFactory itemFactory)
         {
             Board = board;
             MovesLeft = moveCount;
+            this.itemFactory = itemFactory;
         }
 
         /// <summary>
@@ -34,6 +37,14 @@ namespace DreamCase.Core
 
             MovesLeft--;
             return new BlastResult(group);
+        }
+
+        /// <summary>Lets items fall into the gaps, then fills the columns from the top with new cubes.</summary>
+        public FallResult Settle()
+        {
+            var falls = Gravity.Apply(Board);
+            var spawns = Refill.Apply(Board, itemFactory);
+            return new FallResult(falls, spawns);
         }
     }
 }

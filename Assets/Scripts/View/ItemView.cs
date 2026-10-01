@@ -16,6 +16,8 @@ namespace DreamCase.View
         private void Awake()
         {
             SpriteRenderer = GetComponent<SpriteRenderer>();
+            // Only visible inside the board's mask, so new cubes appear to slide in from the board's top edge.
+            SpriteRenderer.maskInteraction = SpriteMaskInteraction.VisibleInsideMask;
         }
 
         /// <summary>Updates the visual to match the model item.</summary>
@@ -34,5 +36,12 @@ namespace DreamCase.View
 
         /// <summary>Shrinks the view to nothing, with a small swell first.</summary>
         public Tween PlayBlast(float duration) => transform.DOScale(0f, duration).SetEase(Ease.InBack);
+
+        /// <summary>Falls to the target speeding up like under gravity, then bounces lightly on landing.</summary>
+        public Tween PlayFall(Vector2 target, float duration, float bounceHeight, float bounceDuration) =>
+            DOTween.Sequence()
+                .Append(transform.DOMove(target, duration).SetEase(Ease.InQuad))
+                .Append(transform.DOMoveY(target.y + bounceHeight, bounceDuration / 2f).SetEase(Ease.OutQuad))
+                .Append(transform.DOMoveY(target.y, bounceDuration / 2f).SetEase(Ease.InQuad));
     }
 }

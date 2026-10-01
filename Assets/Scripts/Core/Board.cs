@@ -61,6 +61,13 @@ namespace DreamCase.Core
             }
         }
 
+        /// <summary>Moves the item so its bottom-left corner is on <paramref name="anchor"/>.</summary>
+        public void Move(Item item, GridPosition anchor)
+        {
+            Remove(item);
+            Place(item, anchor);
+        }
+
         /// <summary>Every item on the board exactly once, even if it covers several cells.</summary>
         public IEnumerable<Item> Items
         {

@@ -20,7 +20,7 @@ namespace DreamCase.Meta
 
             var itemFactory = new ItemFactory(new System.Random());
             var board = new BoardBuilder(itemFactory).Build(level);
-            var session = new LevelSession(board, level.move_count);
+            var session = new LevelSession(board, level.move_count, itemFactory);
 
             levelController.Initialize(session, boardView, boardInput);
         }

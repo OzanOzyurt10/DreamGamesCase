@@ -16,6 +16,7 @@ namespace DreamCase.Meta
         {
             Idle,
             Resolving,
+            Falling,
         }
 
         private LevelSession session;
@@ -48,13 +49,17 @@ namespace DreamCase.Meta
 
             var result = session.TryTap(cell);
             if (result != null)
-                StartCoroutine(Resolve(result));
+                StartCoroutine(PlayTurn(result));
         }
 
-        private IEnumerator Resolve(BlastResult result)
+        private IEnumerator PlayTurn(BlastResult result)
         {
             state = State.Resolving;
             yield return boardView.AnimateBlast(result).WaitForCompletion();
+
+            state = State.Falling;
+            yield return boardView.AnimateFalls(session.Settle()).WaitForCompletion();
+
             state = State.Idle;
         }
     }

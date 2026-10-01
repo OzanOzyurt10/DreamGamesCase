@@ -11,5 +11,8 @@ namespace DreamCase.Core.Items
 
         /// <summary>Number of rows the item covers.</summary>
         public virtual int Height => 1;
+
+        /// <summary>Whether gravity pulls the item down. Items that don't fall also hold up everything above them.</summary>
+        public virtual bool CanFall => true;
     }
 }
