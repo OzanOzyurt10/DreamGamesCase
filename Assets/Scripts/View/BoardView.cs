@@ -31,6 +31,11 @@ namespace DreamCase.View
         [Header("Animation")]
         [SerializeField] private float blastDuration = 0.2f;
 
+        [Tooltip("Time for a group's cubes to slide into the tapped cell before a special item appears.")]
+        [SerializeField] private float mergeDuration = 0.25f;
+
+        [SerializeField] private float specialAppearDuration = 0.2f;
+
         [Tooltip("Time to fall one cell. Longer falls take longer, growing with the square root of the distance like real gravity.")]
         [SerializeField] private float fallDurationPerCell = 0.12f;
 
@@ -62,26 +67,45 @@ namespace DreamCase.View
 
         public GridPosition WorldToCell(Vector2 worldPosition) => layout.WorldToCell(worldPosition);
 
-        /// <summary>Shrinks the blasted cubes away, then returns their views to the pool.</summary>
+        /// <summary>
+        /// Small groups shrink away. Groups that earned a special item slide into the tapped cell first,
+        /// then the special item pops up there. Blasted views go back to the pool.
+        /// </summary>
         public Tween AnimateBlast(BlastResult result)
         {
             var sequence = DOTween.Sequence();
             var removed = new List<(Item item, ItemView view)>();
+            Vector2 tappedCellCenter = layout.CellCenter(result.TappedCell);
+            bool merging = result.CreatedItem != null;
 
             foreach (var cube in result.BlastedCubes)
             {
                 var view = views[cube];
                 views.Remove(cube);
                 removed.Add((cube, view));
-                sequence.Join(view.PlayBlast(blastDuration));
+                sequence.Join(merging ? view.PlayMerge(tappedCellCenter, mergeDuration) : view.PlayBlast(blastDuration));
             }
 
-            sequence.OnComplete(() =>
+            sequence.AppendCallback(() =>
             {
                 foreach (var (item, view) in removed)
                     itemViewFactory.Release(item, view);
             });
+
+            if (merging)
+                sequence.Append(CreateView(result.CreatedItem, tappedCellCenter).PlayAppear(specialAppearDuration));
+
             return sequence;
+        }
+
+        /// <summary>Shows on every cube which special item its group would create.</summary>
+        public void ShowHints(IReadOnlyDictionary<Cube, BlastReward> hints)
+        {
+            foreach (var pair in views)
+            {
+                var reward = pair.Key is Cube cube && hints.TryGetValue(cube, out var hint) ? hint : BlastReward.None;
+                pair.Value.ShowHint(reward);
+            }
         }
 
         /// <summary>Drops fallen items to their new cells and new cubes in from above the board, all at once.</summary>

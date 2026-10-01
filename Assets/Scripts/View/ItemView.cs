@@ -1,4 +1,5 @@
 using DG.Tweening;
+using DreamCase.Core;
 using DreamCase.Core.Items;
 using UnityEngine;
 
@@ -25,6 +26,11 @@ namespace DreamCase.View
         {
         }
 
+        /// <summary>Shows which special item tapping this item would create. Only cubes show hints.</summary>
+        public virtual void ShowHint(BlastReward reward)
+        {
+        }
+
         /// <summary>Scales the view so the sprite spans the given world width, keeping its aspect ratio.</summary>
         public void FitWidth(float worldWidth)
         {
@@ -36,6 +42,17 @@ namespace DreamCase.View
 
         /// <summary>Shrinks the view to nothing, with a small swell first.</summary>
         public Tween PlayBlast(float duration) => transform.DOScale(0f, duration).SetEase(Ease.InBack);
+
+        /// <summary>Slides into the target cell, pulling back slightly first, to merge into a special item.</summary>
+        public Tween PlayMerge(Vector2 target, float duration) => transform.DOMove(target, duration).SetEase(Ease.InBack);
+
+        /// <summary>Hides the view at once, then pops it up to its current size when the tween plays.</summary>
+        public Tween PlayAppear(float duration)
+        {
+            Vector3 fullScale = transform.localScale;
+            transform.localScale = Vector3.zero;
+            return transform.DOScale(fullScale, duration).SetEase(Ease.OutBack);
+        }
 
         /// <summary>Falls to the target speeding up like under gravity, then bounces lightly on landing.</summary>
         public Tween PlayFall(Vector2 target, float duration, float bounceHeight, float bounceDuration) =>

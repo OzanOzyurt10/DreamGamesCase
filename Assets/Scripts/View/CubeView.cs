@@ -1,4 +1,5 @@
 using System;
+using DreamCase.Core;
 using DreamCase.Core.Items;
 using UnityEngine;
 
@@ -11,13 +12,30 @@ namespace DreamCase.View
         {
             public CubeColor Color;
             public Sprite Default;
+            [Tooltip("Shown when the cube's group would create a rocket.")]
+            public Sprite Rocket;
+            [Tooltip("Shown when the cube's group would create a TNT.")]
+            public Sprite Tnt;
         }
 
         [SerializeField] private ColorSprites[] sprites;
 
+        private ColorSprites colorSprites;
+
         public override void Bind(Item item)
         {
-            SpriteRenderer.sprite = SpritesFor(((Cube)item).Color).Default;
+            colorSprites = SpritesFor(((Cube)item).Color);
+            ShowHint(BlastReward.None);
+        }
+
+        public override void ShowHint(BlastReward reward)
+        {
+            SpriteRenderer.sprite = reward switch
+            {
+                BlastReward.Rocket => colorSprites.Rocket,
+                BlastReward.Tnt => colorSprites.Tnt,
+                _ => colorSprites.Default,
+            };
         }
 
         private ColorSprites SpritesFor(CubeColor color)

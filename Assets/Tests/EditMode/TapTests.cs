@@ -41,7 +41,10 @@ namespace DreamCase.Tests
             Assert.AreEqual(4, result.BlastedCubes.Count);
             Assert.AreEqual(4, session.MovesLeft);
             Assert.IsTrue(session.Board.IsEmpty(new GridPosition(0, 2)));
-            Assert.IsTrue(session.Board.IsEmpty(new GridPosition(1, 0)));
+            Assert.IsTrue(session.Board.IsEmpty(new GridPosition(0, 1)));
+            Assert.IsTrue(session.Board.IsEmpty(new GridPosition(1, 1)));
+            // A group of 4 leaves a rocket on the tapped cell instead of a cube.
+            Assert.IsInstanceOf<Rocket>(session.Board.GetItem(new GridPosition(1, 0)));
             Assert.IsFalse(session.Board.IsEmpty(new GridPosition(2, 2)));
         }
 

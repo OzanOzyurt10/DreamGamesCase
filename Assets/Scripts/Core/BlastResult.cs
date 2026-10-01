@@ -6,11 +6,17 @@ namespace DreamCase.Core
     /// <summary>What a valid tap changed on the board, so the view can animate it afterwards.</summary>
     public sealed class BlastResult
     {
+        public GridPosition TappedCell { get; }
         public IReadOnlyList<Cube> BlastedCubes { get; }
 
-        public BlastResult(IReadOnlyList<Cube> blastedCubes)
+        /// <summary>The special item created on the tapped cell, or null if the group was too small.</summary>
+        public SpecialItem CreatedItem { get; }
+
+        public BlastResult(GridPosition tappedCell, IReadOnlyList<Cube> blastedCubes, SpecialItem createdItem)
         {
+            TappedCell = tappedCell;
             BlastedCubes = blastedCubes;
+            CreatedItem = createdItem;
         }
     }
 }

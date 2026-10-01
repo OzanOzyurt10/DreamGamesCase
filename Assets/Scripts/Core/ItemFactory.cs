@@ -43,5 +43,20 @@ namespace DreamCase.Core
         }
 
         public Cube CreateRandomCube() => new Cube(CubeColors[random.Next(CubeColors.Length)]);
+
+        /// <summary>Creates the special item a blast earned. Rockets get a random direction.</summary>
+        public SpecialItem CreateReward(BlastReward reward)
+        {
+            switch (reward)
+            {
+                case BlastReward.Rocket:
+                    var direction = random.Next(2) == 0 ? RocketDirection.Horizontal : RocketDirection.Vertical;
+                    return new Rocket(direction);
+                case BlastReward.Tnt:
+                    return new Tnt();
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(reward), reward, "No special item for this reward.");
+            }
+        }
     }
 }

@@ -35,8 +35,16 @@ namespace DreamCase.Core
             foreach (var cube in group)
                 Board.Remove(cube);
 
+            SpecialItem createdItem = null;
+            var reward = BlastRewards.ForGroupSize(group.Count);
+            if (reward != BlastReward.None)
+            {
+                createdItem = itemFactory.CreateReward(reward);
+                Board.Place(createdItem, cell);
+            }
+
             MovesLeft--;
-            return new BlastResult(group);
+            return new BlastResult(cell, group, createdItem);
         }
 
         /// <summary>Lets items fall into the gaps, then fills the columns from the top with new cubes.</summary>

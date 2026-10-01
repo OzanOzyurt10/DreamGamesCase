@@ -32,6 +32,7 @@ namespace DreamCase.Meta
             this.boardInput = boardInput;
 
             boardView.Build(session.Board);
+            RefreshHints();
             boardInput.CellTapped += OnCellTapped;
             state = State.Idle;
         }
@@ -60,7 +61,10 @@ namespace DreamCase.Meta
             state = State.Falling;
             yield return boardView.AnimateFalls(session.Settle()).WaitForCompletion();
 
+            RefreshHints();
             state = State.Idle;
         }
+
+        private void RefreshHints() => boardView.ShowHints(HintFinder.Find(session.Board));
     }
 }
