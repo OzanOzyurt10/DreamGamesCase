@@ -1,0 +1,38 @@
+using DG.Tweening;
+using DreamCase.Core.Items;
+using UnityEngine;
+
+namespace DreamCase.View
+{
+    /// <summary>
+    /// Visual of one item. Items with a single fixed sprite (stone, vase, TNT, chalice box) use this
+    /// class as is, with the sprite set on the prefab. Items whose sprite depends on model state override Bind.
+    /// </summary>
+    [RequireComponent(typeof(SpriteRenderer))]
+    public class ItemView : MonoBehaviour
+    {
+        protected SpriteRenderer SpriteRenderer { get; private set; }
+
+        private void Awake()
+        {
+            SpriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
+        /// <summary>Updates the visual to match the model item.</summary>
+        public virtual void Bind(Item item)
+        {
+        }
+
+        /// <summary>Scales the view so the sprite spans the given world width, keeping its aspect ratio.</summary>
+        public void FitWidth(float worldWidth)
+        {
+            float spriteWidth = SpriteRenderer.sprite.bounds.size.x;
+            transform.localScale = Vector3.one * (worldWidth / spriteWidth);
+        }
+
+        public void SetSortingOrder(int order) => SpriteRenderer.sortingOrder = order;
+
+        /// <summary>Shrinks the view to nothing, with a small swell first.</summary>
+        public Tween PlayBlast(float duration) => transform.DOScale(0f, duration).SetEase(Ease.InBack);
+    }
+}
