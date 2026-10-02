@@ -8,6 +8,7 @@ namespace DreamCase.Core
         private const int MinBlastGroupSize = 2;
 
         private readonly ItemFactory itemFactory;
+        private readonly DamageSourceIds sourceIds = new DamageSourceIds();
 
         public Board Board { get; }
         public int MovesLeft { get; private set; }
@@ -23,11 +24,41 @@ namespace DreamCase.Core
         /// Applies a tap to the board. Returns null if the tap is not a valid move; then nothing changes
         /// and no move is spent.
         /// </summary>
-        public BlastResult TryTap(GridPosition cell)
+        public TapResult TryTap(GridPosition cell)
         {
-            if (MovesLeft <= 0 || !Board.IsInside(cell) || !(Board.GetItem(cell) is Cube tappedCube))
+            if (MovesLeft <= 0 || !Board.IsInside(cell))
                 return null;
 
+            TapResult result;
+            switch (Board.GetItem(cell))
+            {
+                case Cube cube:
+                    var blast = TryBlast(cube, cell);
+                    result = blast == null ? null : TapResult.FromBlast(blast);
+                    break;
+                case SpecialItem special:
+                    result = TapResult.FromExplosion(new ExplosionResolver(Board, sourceIds).Detonate(special));
+                    break;
+                default:
+                    result = null;
+                    break;
+            }
+
+            if (result != null)
+                MovesLeft--;
+            return result;
+        }
+
+        /// <summary>Lets items fall into the gaps, then fills the columns from the top with new cubes.</summary>
+        public FallResult Settle()
+        {
+            var falls = Gravity.Apply(Board);
+            var spawns = Refill.Apply(Board, itemFactory);
+            return new FallResult(falls, spawns);
+        }
+
+        private BlastResult TryBlast(Cube tappedCube, GridPosition cell)
+        {
             var group = CubeGroupFinder.FindGroup(Board, tappedCube);
             if (group.Count < MinBlastGroupSize)
                 return null;
@@ -43,16 +74,7 @@ namespace DreamCase.Core
                 Board.Place(createdItem, cell);
             }
 
-            MovesLeft--;
             return new BlastResult(cell, group, createdItem);
-        }
-
-        /// <summary>Lets items fall into the gaps, then fills the columns from the top with new cubes.</summary>
-        public FallResult Settle()
-        {
-            var falls = Gravity.Apply(Board);
-            var spawns = Refill.Apply(Board, itemFactory);
-            return new FallResult(falls, spawns);
         }
     }
 }

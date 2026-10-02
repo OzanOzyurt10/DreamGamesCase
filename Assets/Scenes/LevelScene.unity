@@ -131,6 +131,7 @@ GameObject:
   - component: {fileID: 7774157}
   - component: {fileID: 7774159}
   - component: {fileID: 7774160}
+  - component: {fileID: 7774161}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -152,6 +153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.BoardView
   worldCamera: {fileID: 357353745}
   itemViewFactory: {fileID: 7774159}
+  rocketEffect: {fileID: 7774161}
   frame: {fileID: 1724346615}
   itemMask: {fileID: 1526331686}
   itemsRoot: {fileID: 2061385841}
@@ -159,6 +161,9 @@ MonoBehaviour:
   screenMarginFraction: 0.04
   framePaddingInCells: 0.15
   blastDuration: 0.2
+  mergeDuration: 0.25
+  specialAppearDuration: 0.2
+  explosionTickDuration: 0.06
   fallDurationPerCell: 0.12
   landingBounceInCells: 0.08
   landingBounceDuration: 0.12
@@ -212,6 +217,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.BoardInput
   worldCamera: {fileID: 357353745}
   boardView: {fileID: 7774157}
+--- !u!114 &7774161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7774156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eeb190a18ebd0e47bdca9dc64a88d2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.RocketEffect
+  leftHalf: {fileID: 21300000, guid: a7939170c84cc754fa7dc48a9ec73181, type: 3}
+  rightHalf: {fileID: 21300000, guid: 9a061b79684566a41bac287c017f199e, type: 3}
+  bottomHalf: {fileID: 21300000, guid: cc95f74749e820241b1e2865959156e0, type: 3}
+  topHalf: {fileID: 21300000, guid: 6a9041a66c3bb2149968d49433a8d2ee, type: 3}
+  sortingOrder: 100
 --- !u!1 &357353743
 GameObject:
   m_ObjectHideFlags: 0

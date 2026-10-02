@@ -14,6 +14,7 @@ namespace DreamCase.View
     {
         [SerializeField] private Camera worldCamera;
         [SerializeField] private ItemViewFactory itemViewFactory;
+        [SerializeField] private RocketEffect rocketEffect;
         [SerializeField] private SpriteRenderer frame;
         [SerializeField] private SpriteMask itemMask;
         [SerializeField] private Transform itemsRoot;
@@ -36,6 +37,9 @@ namespace DreamCase.View
 
         [SerializeField] private float specialAppearDuration = 0.2f;
 
+        [Tooltip("Real time of one explosion tick: a rocket half crosses one cell per tick.")]
+        [SerializeField] private float explosionTickDuration = 0.06f;
+
         [Tooltip("Time to fall one cell. Longer falls take longer, growing with the square root of the distance like real gravity.")]
         [SerializeField] private float fallDurationPerCell = 0.12f;
 
@@ -45,10 +49,12 @@ namespace DreamCase.View
         [SerializeField] private float landingBounceDuration = 0.12f;
 
         private readonly Dictionary<Item, ItemView> views = new Dictionary<Item, ItemView>();
+        private Board board;
         private BoardLayout layout;
 
         public void Build(Board board)
         {
+            this.board = board;
             layout = new BoardLayout(board.Width, board.Height, AvailableArea(), framePaddingInCells);
 
             frame.transform.position = layout.Center;
@@ -98,6 +104,37 @@ namespace DreamCase.View
             return sequence;
         }
 
+        /// <summary>
+        /// Replays an explosion timeline: tick N happens N tick durations after the start. Rocket halves fly
+        /// out and every cleared item shrinks away on its own tick.
+        /// </summary>
+        public Tween AnimateExplosion(ExplosionResult result)
+        {
+            var sequence = DOTween.Sequence();
+
+            foreach (var launch in result.Rockets)
+            {
+                foreach (var direction in launch.Direction.HalfDirections())
+                    sequence.Insert(launch.Tick * explosionTickDuration, LaunchRocketHalf(launch.Origin, direction));
+            }
+
+            var removed = new List<(Item item, ItemView view)>();
+            foreach (var clear in result.Cleared)
+            {
+                var view = views[clear.Item];
+                views.Remove(clear.Item);
+                removed.Add((clear.Item, view));
+                sequence.Insert(clear.Tick * explosionTickDuration, view.PlayBlast(blastDuration));
+            }
+
+            sequence.AppendCallback(() =>
+            {
+                foreach (var (item, view) in removed)
+                    itemViewFactory.Release(item, view);
+            });
+            return sequence;
+        }
+
         /// <summary>Shows on every cube which special item its group would create.</summary>
         public void ShowHints(IReadOnlyDictionary<Cube, BlastReward> hints)
         {
@@ -131,6 +168,25 @@ namespace DreamCase.View
             view.SetSortingOrder(item.Position.Y);
             views.Add(item, view);
             return view;
+        }
+
+        /// <summary>Flies one rocket half from its origin to the first cell outside the board, where the mask hides it.</summary>
+        private Tween LaunchRocketHalf(GridPosition origin, GridPosition direction)
+        {
+            var exitCell = origin + direction;
+            int cellsToExit = 1;
+            while (board.IsInside(exitCell))
+            {
+                exitCell += direction;
+                cellsToExit++;
+            }
+
+            return rocketEffect.LaunchHalf(
+                direction,
+                layout.CellCenter(origin),
+                layout.CellCenter(exitCell),
+                cellsToExit * explosionTickDuration,
+                layout.CellSize);
         }
 
         private Tween PlayFall(ItemView view, ItemFall fall)

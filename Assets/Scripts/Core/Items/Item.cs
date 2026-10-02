@@ -14,5 +14,13 @@ namespace DreamCase.Core.Items
 
         /// <summary>Whether gravity pulls the item down. Items that don't fall also hold up everything above them.</summary>
         public virtual bool CanFall => true;
+
+        /// <summary>Applies one hit. Returns true when the item is cleared and must leave the board.</summary>
+        internal virtual bool TakeDamage(DamageInfo damage) => false;
+
+        /// <summary>Called right after an explosion cleared the item. Special items detonate here.</summary>
+        internal virtual void OnCleared(ExplosionResolver explosions, int tick)
+        {
+        }
     }
 }

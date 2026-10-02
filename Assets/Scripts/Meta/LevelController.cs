@@ -53,10 +53,13 @@ namespace DreamCase.Meta
                 StartCoroutine(PlayTurn(result));
         }
 
-        private IEnumerator PlayTurn(BlastResult result)
+        private IEnumerator PlayTurn(TapResult result)
         {
             state = State.Resolving;
-            yield return boardView.AnimateBlast(result).WaitForCompletion();
+            var resolving = result.Blast != null
+                ? boardView.AnimateBlast(result.Blast)
+                : boardView.AnimateExplosion(result.Explosion);
+            yield return resolving.WaitForCompletion();
 
             state = State.Falling;
             yield return boardView.AnimateFalls(session.Settle()).WaitForCompletion();

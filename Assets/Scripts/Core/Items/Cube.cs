@@ -8,5 +8,8 @@ namespace DreamCase.Core.Items
         {
             Color = color;
         }
+
+        // A neighbouring blast doesn't affect cubes; only explosions clear them.
+        internal override bool TakeDamage(DamageInfo damage) => damage.Type == DamageType.Explosion;
     }
 }

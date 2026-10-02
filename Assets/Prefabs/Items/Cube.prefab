@@ -107,9 +107,17 @@ MonoBehaviour:
   sprites:
   - Color: 0
     Default: {fileID: 21300000, guid: 50bbefcfb6695e34ab0253853ecf961c, type: 3}
+    Rocket: {fileID: 21300000, guid: d8539121ac53e934790e07286e2eec23, type: 3}
+    Tnt: {fileID: 21300000, guid: c8813bb79c7a27844b3ea398e396d4d8, type: 3}
   - Color: 1
     Default: {fileID: 21300000, guid: 14ed501a596c00b419d1588d6358ebbc, type: 3}
+    Rocket: {fileID: 21300000, guid: a0eee83140e5df5438bd4757d471f760, type: 3}
+    Tnt: {fileID: 21300000, guid: cf300b39a670b7640b471064c6c149e8, type: 3}
   - Color: 2
     Default: {fileID: 21300000, guid: 41e824322240cd04fbcd02deeac049da, type: 3}
+    Rocket: {fileID: 21300000, guid: 37726cd025bb03e4b98a8439a6a23957, type: 3}
+    Tnt: {fileID: 21300000, guid: b52895e4ace89664b9e1193b35547026, type: 3}
   - Color: 3
     Default: {fileID: 21300000, guid: 2cda21508d9ce0f44bcbdc6cf40c6712, type: 3}
+    Rocket: {fileID: 21300000, guid: 52110c051fb34f4489eb934f6654ff93, type: 3}
+    Tnt: {fileID: 21300000, guid: ac7e19c3b992ad9428805306f8d2a682, type: 3}

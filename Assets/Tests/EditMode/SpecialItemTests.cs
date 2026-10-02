@@ -27,7 +27,7 @@ namespace DreamCase.Tests
 
             var result = session.TryTap(At(1, 0));
 
-            Assert.IsNull(result.CreatedItem);
+            Assert.IsNull(result.Blast.CreatedItem);
             Assert.IsTrue(session.Board.IsEmpty(At(1, 0)));
         }
 
@@ -39,9 +39,9 @@ namespace DreamCase.Tests
 
             var result = session.TryTap(At(2, 0));
 
-            Assert.IsInstanceOf<Rocket>(result.CreatedItem);
-            Assert.AreSame(result.CreatedItem, session.Board.GetItem(At(2, 0)));
-            Assert.AreEqual(At(2, 0), result.TappedCell);
+            Assert.IsInstanceOf<Rocket>(result.Blast.CreatedItem);
+            Assert.AreSame(result.Blast.CreatedItem, session.Board.GetItem(At(2, 0)));
+            Assert.AreEqual(At(2, 0), result.Blast.TappedCell);
         }
 
         [Test]
@@ -54,9 +54,9 @@ namespace DreamCase.Tests
 
             var result = session.TryTap(At(2, 0));
 
-            Assert.AreEqual(6, result.BlastedCubes.Count);
-            Assert.IsInstanceOf<Tnt>(result.CreatedItem);
-            Assert.AreSame(result.CreatedItem, session.Board.GetItem(At(2, 0)));
+            Assert.AreEqual(6, result.Blast.BlastedCubes.Count);
+            Assert.IsInstanceOf<Tnt>(result.Blast.CreatedItem);
+            Assert.AreSame(result.Blast.CreatedItem, session.Board.GetItem(At(2, 0)));
         }
 
         [Test]

@@ -38,7 +38,7 @@ namespace DreamCase.Tests
             var result = session.TryTap(new GridPosition(1, 0));
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(4, result.BlastedCubes.Count);
+            Assert.AreEqual(4, result.Blast.BlastedCubes.Count);
             Assert.AreEqual(4, session.MovesLeft);
             Assert.IsTrue(session.Board.IsEmpty(new GridPosition(0, 2)));
             Assert.IsTrue(session.Board.IsEmpty(new GridPosition(0, 1)));

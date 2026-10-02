@@ -8,5 +8,8 @@ namespace DreamCase.Core.Items
         {
             Direction = direction;
         }
+
+        internal override void Detonate(ExplosionResolver explosions, int tick) =>
+            explosions.FireRocket(Position, Direction, tick, explosions.NewSource());
     }
 }
