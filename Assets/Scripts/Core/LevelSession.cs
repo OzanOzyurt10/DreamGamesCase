@@ -6,6 +6,7 @@ namespace DreamCase.Core
     public sealed class LevelSession
     {
         private const int MinBlastGroupSize = 2;
+        private const int MinComboSize = 2;
 
         private readonly ItemFactory itemFactory;
         private readonly DamageSourceIds sourceIds = new DamageSourceIds();
@@ -37,7 +38,7 @@ namespace DreamCase.Core
                     result = blast == null ? null : TapResult.FromBlast(blast);
                     break;
                 case SpecialItem special:
-                    result = TapResult.FromExplosion(new ExplosionResolver(Board, sourceIds).Detonate(special));
+                    result = TapResult.FromExplosion(Detonate(special));
                     break;
                 default:
                     result = null;
@@ -55,6 +56,16 @@ namespace DreamCase.Core
             var falls = Gravity.Apply(Board);
             var spawns = Refill.Apply(Board, itemFactory);
             return new FallResult(falls, spawns);
+        }
+
+        /// <summary>A tapped special item explodes alone, or as a combo with the special items connected to it.</summary>
+        private ExplosionResult Detonate(SpecialItem tapped)
+        {
+            var explosions = new ExplosionResolver(Board, sourceIds);
+            var group = FloodFill.Find(Board, tapped, _ => true);
+            return group.Count >= MinComboSize
+                ? explosions.DetonateCombo(group, tapped.Position)
+                : explosions.Detonate(tapped);
         }
 
         private BlastResult TryBlast(Cube tappedCube, GridPosition cell)

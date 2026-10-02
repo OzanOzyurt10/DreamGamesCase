@@ -86,17 +86,11 @@ namespace DreamCase.View
 
             foreach (var cube in result.BlastedCubes)
             {
-                var view = views[cube];
-                views.Remove(cube);
-                removed.Add((cube, view));
+                var view = Detach(cube, removed);
                 sequence.Join(merging ? view.PlayMerge(tappedCellCenter, mergeDuration) : view.PlayBlast(blastDuration));
             }
 
-            sequence.AppendCallback(() =>
-            {
-                foreach (var (item, view) in removed)
-                    itemViewFactory.Release(item, view);
-            });
+            sequence.AppendCallback(() => ReleaseAll(removed));
 
             if (merging)
                 sequence.Append(CreateView(result.CreatedItem, tappedCellCenter).PlayAppear(specialAppearDuration));
@@ -105,33 +99,41 @@ namespace DreamCase.View
         }
 
         /// <summary>
-        /// Replays an explosion timeline: tick N happens N tick durations after the start. Rocket halves fly
-        /// out and every cleared item shrinks away on its own tick.
+        /// Replays an explosion timeline: tick N happens N tick durations after the timeline starts. For a combo,
+        /// the members first slide into the center and the timeline starts once they meet. Rocket halves fly out
+        /// and every cleared item shrinks away on its own tick.
         /// </summary>
         public Tween AnimateExplosion(ExplosionResult result)
         {
             var sequence = DOTween.Sequence();
+            var removed = new List<(Item item, ItemView view)>();
+            float timelineStart = 0f;
+
+            if (result.Combo != null)
+            {
+                timelineStart = mergeDuration;
+                Vector2 center = layout.CellCenter(result.Combo.Center);
+                foreach (var member in result.Combo.Members)
+                {
+                    var view = Detach(member, removed);
+                    sequence.Insert(0f, view.PlayMerge(center, mergeDuration));
+                    sequence.Insert(timelineStart, view.PlayBlast(blastDuration));
+                }
+            }
 
             foreach (var launch in result.Rockets)
             {
                 foreach (var direction in launch.Direction.HalfDirections())
-                    sequence.Insert(launch.Tick * explosionTickDuration, LaunchRocketHalf(launch.Origin, direction));
+                    sequence.Insert(timelineStart + launch.Tick * explosionTickDuration, LaunchRocketHalf(launch.Origin, direction));
             }
 
-            var removed = new List<(Item item, ItemView view)>();
             foreach (var clear in result.Cleared)
             {
-                var view = views[clear.Item];
-                views.Remove(clear.Item);
-                removed.Add((clear.Item, view));
-                sequence.Insert(clear.Tick * explosionTickDuration, view.PlayBlast(blastDuration));
+                var view = Detach(clear.Item, removed);
+                sequence.Insert(timelineStart + clear.Tick * explosionTickDuration, view.PlayBlast(blastDuration));
             }
 
-            sequence.AppendCallback(() =>
-            {
-                foreach (var (item, view) in removed)
-                    itemViewFactory.Release(item, view);
-            });
+            sequence.AppendCallback(() => ReleaseAll(removed));
             return sequence;
         }
 
@@ -157,6 +159,21 @@ namespace DreamCase.View
                 sequence.Join(PlayFall(CreateView(spawn.Item, layout.CellCenter(spawn.From)), spawn));
 
             return sequence;
+        }
+
+        /// <summary>Unlinks an item's view so it can play its last animation; release it with ReleaseAll afterwards.</summary>
+        private ItemView Detach(Item item, List<(Item item, ItemView view)> removed)
+        {
+            var view = views[item];
+            views.Remove(item);
+            removed.Add((item, view));
+            return view;
+        }
+
+        private void ReleaseAll(List<(Item item, ItemView view)> removed)
+        {
+            foreach (var (item, view) in removed)
+                itemViewFactory.Release(item, view);
         }
 
         private ItemView CreateView(Item item, Vector2 worldPosition)

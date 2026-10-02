@@ -36,6 +36,25 @@ namespace DreamCase.Tests
             return board;
         }
 
+        /// <summary>A board full of <paramref name="fill"/>, with some cells (board coordinates, y = 0 at the bottom) set to other codes.</summary>
+        public static Board Filled(int width, int height, string fill, params (int x, int y, string code)[] cells)
+        {
+            var codes = new string[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                    codes[y, x] = fill;
+            }
+            foreach (var (x, y, code) in cells)
+                codes[y, x] = code;
+
+            var rowsTopToBottom = Enumerable.Range(0, height)
+                .Select(row => height - 1 - row)
+                .Select(y => string.Join(" ", Enumerable.Range(0, width).Select(x => codes[y, x])))
+                .ToArray();
+            return FromRows(rowsTopToBottom);
+        }
+
         public static LevelSession Session(Board board, int moveCount = 5) =>
             new LevelSession(board, moveCount, Factory());
     }

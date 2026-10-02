@@ -41,24 +41,33 @@ namespace DreamCase.Core
         public ExplosionResult Detonate(SpecialItem tapped)
         {
             Clear(tapped, 0);
-
-            while (hitsByTick.Count > 0)
-            {
-                int tick = hitsByTick.Keys.First();
-                var hits = hitsByTick[tick];
-                hitsByTick.Remove(tick);
-
-                // Hits are only ever scheduled for later ticks, so this list can't grow while we go through it.
-                foreach (var hit in hits)
-                    Apply(hit, tick);
-            }
-            return new ExplosionResult(cleared, rockets);
+            return RunTimeline(null);
         }
 
-        /// <summary>Two halves fly from the origin in opposite directions, one cell per tick, to the board's edge.</summary>
+        /// <summary>
+        /// Merges adjacent special items into the tapped cell and explodes them once, as a combo. The members
+        /// leave the board without their own explosions; anything the combo hits still reacts normally.
+        /// </summary>
+        public ExplosionResult DetonateCombo(IReadOnlyList<SpecialItem> members, GridPosition center)
+        {
+            foreach (var member in members)
+                board.Remove(member);
+
+            ComboRules.Detonate(members, center, this, NewSource());
+            return RunTimeline(new ComboMerge(center, members));
+        }
+
+        /// <summary>
+        /// Two halves fly from the origin in opposite directions, one cell per tick, to the board's edge.
+        /// The origin is hit too: empty for a single rocket, but combo rockets can start on occupied cells.
+        /// </summary>
         public void FireRocket(GridPosition origin, RocketDirection direction, int tick, int sourceId)
         {
+            if (!board.IsInside(origin))
+                return;
+
             rockets.Add(new RocketLaunch(origin, direction, tick));
+            Schedule(tick + 1, origin, sourceId);
 
             foreach (var step in direction.HalfDirections())
             {
@@ -80,6 +89,21 @@ namespace DreamCase.Core
                         Schedule(tick + 1, cell, sourceId);
                 }
             }
+        }
+
+        private ExplosionResult RunTimeline(ComboMerge combo)
+        {
+            while (hitsByTick.Count > 0)
+            {
+                int tick = hitsByTick.Keys.First();
+                var hits = hitsByTick[tick];
+                hitsByTick.Remove(tick);
+
+                // Hits are only ever scheduled for later ticks, so this list can't grow while we go through it.
+                foreach (var hit in hits)
+                    Apply(hit, tick);
+            }
+            return new ExplosionResult(combo, cleared, rockets);
         }
 
         private void Schedule(int tick, GridPosition cell, int sourceId)
