@@ -104,6 +104,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cb12e35874e9814284a9ee76eff31d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.ChaliceBoxView
+  hitEffect: {fileID: 624160990290125120, guid: 842e2717ee00b6a458b36372da824b6e, type: 3}
+  breakEffect: {fileID: 7155071588063164786, guid: 4f0058d2ac4e2e748afbb3668fbf2f73, type: 3}
   door: {fileID: 21300000, guid: 5bdc38535e40fd84fb4e4809cc2238ba, type: 3}
   shelves: {fileID: 21300000, guid: 673c45c0abce82648950173ded67fb83, type: 3}
   chalice: {fileID: 21300000, guid: 8bcded4b725284b4a858a2362b718ff7, type: 3}

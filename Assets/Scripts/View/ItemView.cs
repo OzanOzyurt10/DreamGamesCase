@@ -12,7 +12,19 @@ namespace DreamCase.View
     [RequireComponent(typeof(SpriteRenderer))]
     public class ItemView : MonoBehaviour
     {
+        [Header("Effects (optional)")]
+        [Tooltip("Played when the item takes damage and survives.")]
+        [SerializeField] private ParticleSystem hitEffect;
+        [Tooltip("Played when the item leaves the board.")]
+        [SerializeField] private ParticleSystem breakEffect;
+
         protected SpriteRenderer SpriteRenderer { get; private set; }
+
+        /// <summary>The effect for a hit the item survives, or null for none.</summary>
+        public virtual ParticleSystem HitEffect => hitEffect;
+
+        /// <summary>The effect for the item leaving the board, or null for none.</summary>
+        public virtual ParticleSystem BreakEffect => breakEffect;
 
         /// <summary>The scale set by FitWidth: the size the view returns to after any squash.</summary>
         private Vector3 fittedScale;

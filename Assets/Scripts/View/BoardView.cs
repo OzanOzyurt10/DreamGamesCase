@@ -15,6 +15,7 @@ namespace DreamCase.View
         [SerializeField] private Camera worldCamera;
         [SerializeField] private ItemViewFactory itemViewFactory;
         [SerializeField] private RocketEffect rocketEffect;
+        [SerializeField] private EffectPool effects;
         [SerializeField] private SpriteRenderer frame;
         [SerializeField] private SpriteMask itemMask;
         [SerializeField] private Transform itemsRoot;
@@ -90,14 +91,17 @@ namespace DreamCase.View
             foreach (var cube in result.BlastedCubes)
             {
                 var view = Detach(cube, removed);
-                sequence.Insert(0f, merging ? view.PlayMerge(tappedCellCenter, mergeDuration) : view.PlayBlast(blastDuration));
+                if (merging)
+                    sequence.Insert(0f, view.PlayMerge(tappedCellCenter, mergeDuration));
+                else
+                    PlayBreak(sequence, view, 0f);
             }
 
             foreach (var obstacle in result.DamagedObstacles)
                 PlayDamage(sequence, obstacle, 0f);
 
             foreach (var obstacle in result.ClearedObstacles)
-                sequence.Insert(0f, Detach(obstacle, removed).PlayBlast(blastDuration));
+                PlayBreak(sequence, Detach(obstacle, removed), 0f);
 
             sequence.AppendCallback(() => ReleaseAll(removed));
 
@@ -126,7 +130,7 @@ namespace DreamCase.View
                 {
                     var view = Detach(member, removed);
                     sequence.Insert(0f, view.PlayMerge(center, mergeDuration));
-                    sequence.Insert(timelineStart, view.PlayBlast(blastDuration));
+                    PlayBreak(sequence, view, timelineStart);
                 }
             }
 
@@ -141,10 +145,7 @@ namespace DreamCase.View
                 PlayDamage(sequence, hit.Item, timelineStart + hit.Tick * explosionTickDuration);
 
             foreach (var clear in result.Cleared)
-            {
-                var view = Detach(clear.Item, removed);
-                sequence.Insert(timelineStart + clear.Tick * explosionTickDuration, view.PlayBlast(blastDuration));
-            }
+                PlayBreak(sequence, Detach(clear.Item, removed), timelineStart + clear.Tick * explosionTickDuration);
 
             sequence.AppendCallback(() => ReleaseAll(removed));
             return sequence;
@@ -182,8 +183,20 @@ namespace DreamCase.View
         private void PlayDamage(Sequence sequence, Item item, float time)
         {
             var view = views[item];
-            sequence.InsertCallback(time, () => view.Bind(item));
+            sequence.InsertCallback(time, () =>
+            {
+                view.Bind(item);
+                // Read after Bind: a view can pick its hit effect from the state it just showed.
+                effects.Play(view.HitEffect, view.transform.position, layout.CellSize);
+            });
             sequence.Insert(time, view.PlayHit(hitDuration));
+        }
+
+        /// <summary>At the given time, the view shrinks away and its break effect (pieces, explosion) plays where it stood.</summary>
+        private void PlayBreak(Sequence sequence, ItemView view, float time)
+        {
+            sequence.InsertCallback(time, () => effects.Play(view.BreakEffect, view.transform.position, layout.CellSize));
+            sequence.Insert(time, view.PlayBlast(blastDuration));
         }
 
         /// <summary>Unlinks an item's view so it can play its last animation; release it with ReleaseAll afterwards.</summary>

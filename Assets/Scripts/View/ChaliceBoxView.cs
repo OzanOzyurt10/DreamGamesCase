@@ -25,6 +25,11 @@ namespace DreamCase.View
         [SerializeField] private float chaliceScale = 0.55f;
 
         private SpriteRenderer[] chalices;
+        private bool doorShownOpen;
+        private bool doorJustOpened;
+
+        /// <summary>The hit effect (door pieces) plays only on the hit that opens the door.</summary>
+        public override ParticleSystem HitEffect => doorJustOpened ? base.HitEffect : null;
 
         protected override void Awake()
         {
@@ -37,6 +42,8 @@ namespace DreamCase.View
         public override void Bind(Item item)
         {
             var box = (ChaliceBox)item;
+            doorJustOpened = box.IsDoorOpen && !doorShownOpen;
+            doorShownOpen = box.IsDoorOpen;
             SpriteRenderer.sprite = box.IsDoorOpen ? shelves : door;
 
             // The top shelf empties first.

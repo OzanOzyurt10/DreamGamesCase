@@ -104,3 +104,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2594e59082164e2408d9d4ce27cf8717, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.ItemView
+  hitEffect: {fileID: 0}
+  breakEffect: {fileID: 5479422073299356181, guid: 5ebe26d332bef9e428f1fddc17581843, type: 3}

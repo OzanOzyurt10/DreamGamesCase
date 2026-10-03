@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 7774159}
   - component: {fileID: 7774160}
   - component: {fileID: 7774161}
+  - component: {fileID: 7774162}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -154,6 +155,7 @@ MonoBehaviour:
   worldCamera: {fileID: 357353745}
   itemViewFactory: {fileID: 7774159}
   rocketEffect: {fileID: 7774161}
+  effects: {fileID: 7774162}
   frame: {fileID: 1724346615}
   itemMask: {fileID: 1526331686}
   itemsRoot: {fileID: 2061385841}
@@ -234,7 +236,20 @@ MonoBehaviour:
   rightHalf: {fileID: 21300000, guid: 9a061b79684566a41bac287c017f199e, type: 3}
   bottomHalf: {fileID: 21300000, guid: cc95f74749e820241b1e2865959156e0, type: 3}
   topHalf: {fileID: 21300000, guid: 6a9041a66c3bb2149968d49433a8d2ee, type: 3}
+  trailPrefab: {fileID: 9152688025642064810, guid: f1d691d530a5fb54faa388b62c58b90e, type: 3}
   sortingOrder: 100
+--- !u!114 &7774162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7774156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98ce0540e11b1174da2a6779d97fee7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DreamCase.View.EffectPool
 --- !u!1 &16302562
 GameObject:
   m_ObjectHideFlags: 0
@@ -1001,7 +1016,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 200
@@ -1967,7 +1982,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4287373140
   m_fontColor: {r: 0.33, g: 0.12, b: 0.55, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -1980,7 +1995,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -2117,7 +2132,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -4496,7 +4511,7 @@ ParticleSystem:
           m_PostInfinity: 2
           m_RotationOrder: 4
       cycleCount: 1
-      repeatInterval: 0.0001
+      repeatInterval: 0.01
       probability: 1
   SizeModule:
     enabled: 1
@@ -8433,7 +8448,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

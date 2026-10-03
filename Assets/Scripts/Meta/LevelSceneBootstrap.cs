@@ -19,6 +19,14 @@ namespace DreamCase.Meta
         private void Start()
         {
             var progress = new ProgressService();
+
+            // Every level is done (e.g. Play pressed in LevelScene after finishing): there is nothing to play.
+            if (progress.IsFinished)
+            {
+                SceneLoader.LoadMain();
+                return;
+            }
+
             var level = LevelLoader.Load(progress.CurrentLevel);
 
             var itemFactory = new ItemFactory(new System.Random());
