@@ -52,6 +52,11 @@ namespace DreamCase.View
 
         [SerializeField] private float landingBounceDuration = 0.12f;
 
+        [SerializeField] private float shuffleDuration = 0.5f;
+
+        [Tooltip("Height of a shuffled cube's jump, in cells.")]
+        [SerializeField] private float shuffleArcInCells = 1f;
+
         private readonly Dictionary<Item, ItemView> views = new Dictionary<Item, ItemView>();
         private Board board;
         private BoardLayout layout;
@@ -161,6 +166,19 @@ namespace DreamCase.View
             }
         }
 
+        /// <summary>Every shuffled cube jumps to its new cell at the same time.</summary>
+        public Tween AnimateShuffle(IReadOnlyList<ItemMove> moves)
+        {
+            var sequence = DOTween.Sequence();
+            foreach (var move in moves)
+            {
+                var view = views[move.Item];
+                view.SetSortingOrder(move.To.Y);
+                sequence.Join(view.PlayShuffle(layout.CellCenter(move.To), shuffleArcInCells * layout.CellSize, shuffleDuration));
+            }
+            return sequence;
+        }
+
         /// <summary>Drops fallen items to their new cells and new cubes in from above the board, all at once.</summary>
         public Tween AnimateFalls(FallResult result)
         {
@@ -244,7 +262,7 @@ namespace DreamCase.View
                 layout.CellSize);
         }
 
-        private Tween PlayFall(ItemView view, ItemFall fall)
+        private Tween PlayFall(ItemView view, ItemMove fall)
         {
             view.SetSortingOrder(fall.To.Y);
             int distance = fall.From.Y - fall.To.Y;

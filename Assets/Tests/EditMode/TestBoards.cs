@@ -56,6 +56,6 @@ namespace DreamCase.Tests
         }
 
         public static LevelSession Session(Board board, int moveCount = 5) =>
-            new LevelSession(board, moveCount, Factory());
+            new LevelSession(board, moveCount, Factory(), new Random(0));
     }
 }

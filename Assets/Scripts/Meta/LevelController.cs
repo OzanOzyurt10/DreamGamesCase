@@ -8,7 +8,7 @@ using UnityEngine;
 namespace DreamCase.Meta
 {
     /// <summary>
-    /// Runs the level's turn loop as a state machine: Idle → Resolving → Falling → CheckEnd → Idle, or Ended.
+    /// Runs the level's turn loop as a state machine: Idle → Resolving → Falling → (Shuffling) → CheckEnd → Idle, or Ended.
     /// The model resolves a tap instantly; this class lets the view play the result and accepts new taps only
     /// when the board is idle.
     /// </summary>
@@ -19,6 +19,7 @@ namespace DreamCase.Meta
             Idle,
             Resolving,
             Falling,
+            Shuffling,
             CheckEnd,
             Ended,
         }
@@ -40,6 +41,8 @@ namespace DreamCase.Meta
             this.boardInput = boardInput;
             this.hud = hud;
 
+            // A starting board without a move is shuffled before it is first drawn, so there is nothing to animate.
+            session.TryShuffle(out _);
             boardView.Build(session.Board);
             hud.Initialize(session);
             RefreshHints();
@@ -77,6 +80,12 @@ namespace DreamCase.Meta
 
             state = State.Falling;
             yield return boardView.AnimateFalls(session.Settle()).WaitForCompletion();
+
+            if (session.TryShuffle(out var shuffled))
+            {
+                state = State.Shuffling;
+                yield return boardView.AnimateShuffle(shuffled).WaitForCompletion();
+            }
 
             state = State.CheckEnd;
             CheckEnd();

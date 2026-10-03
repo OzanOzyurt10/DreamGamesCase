@@ -8,10 +8,8 @@ namespace DreamCase.Core
     /// <summary>The state of a level being played: its board and the moves left.</summary>
     public sealed class LevelSession
     {
-        private const int MinBlastGroupSize = 2;
-        private const int MinComboSize = 2;
-
         private readonly ItemFactory itemFactory;
+        private readonly Random random;
         private readonly DamageSourceIds sourceIds = new DamageSourceIds();
 
         public Board Board { get; }
@@ -20,14 +18,18 @@ namespace DreamCase.Core
         /// <summary>Every obstacle is cleared. Only meaningful once the board has settled.</summary>
         public bool IsWon => !Board.Items.OfType<Obstacle>().Any();
 
-        /// <summary>No moves left and obstacles remain. Only meaningful once the board has settled.</summary>
-        public bool IsLost => MovesLeft == 0 && !IsWon;
+        /// <summary>
+        /// Obstacles remain and the player can't go on: no moves left, or no item can be tapped even after a shuffle.
+        /// Only meaningful once the board has settled.
+        /// </summary>
+        public bool IsLost => !IsWon && (MovesLeft == 0 || !MoveFinder.HasAvailableMove(Board));
 
-        public LevelSession(Board board, int moveCount, ItemFactory itemFactory)
+        public LevelSession(Board board, int moveCount, ItemFactory itemFactory, Random random)
         {
             Board = board;
             MovesLeft = moveCount;
             this.itemFactory = itemFactory;
+            this.random = random;
         }
 
         /// <summary>How many obstacles of each type are still on the board. Cleared types are left out.</summary>
@@ -38,31 +40,19 @@ namespace DreamCase.Core
 
         /// <summary>
         /// Applies a tap to the board. Returns null if the tap is not a valid move; then nothing changes
-        /// and no move is spent.
+        /// and no move is spent. What a tap does is up to the tapped item.
         /// </summary>
         public TapResult TryTap(GridPosition cell)
         {
             if (MovesLeft <= 0 || !Board.IsInside(cell))
                 return null;
 
-            TapResult result;
-            switch (Board.GetItem(cell))
-            {
-                case Cube cube:
-                    var blast = TryBlast(cube, cell);
-                    result = blast == null ? null : TapResult.FromBlast(blast);
-                    break;
-                case SpecialItem special:
-                    result = TapResult.FromExplosion(Detonate(special));
-                    break;
-                default:
-                    result = null;
-                    break;
-            }
+            var item = Board.GetItem(cell);
+            if (item == null || !item.CanBeTapped(Board))
+                return null;
 
-            if (result != null)
-                MovesLeft--;
-            return result;
+            MovesLeft--;
+            return item.Tap(new TapContext(Board, itemFactory, sourceIds));
         }
 
         /// <summary>Lets items fall into the gaps, then fills the columns from the top with new cubes.</summary>
@@ -73,37 +63,20 @@ namespace DreamCase.Core
             return new FallResult(falls, spawns);
         }
 
-        /// <summary>A tapped special item explodes alone, or as a combo with the special items connected to it.</summary>
-        private ExplosionResult Detonate(SpecialItem tapped)
+        /// <summary>
+        /// Shuffles the cubes if the level is still being played but no item can be tapped.
+        /// Returns false, with no moves, when no shuffle was needed.
+        /// </summary>
+        public bool TryShuffle(out IReadOnlyList<ItemMove> moves)
         {
-            var explosions = new ExplosionResolver(Board, sourceIds);
-            var group = FloodFill.Find(Board, tapped, _ => true);
-            return group.Count >= MinComboSize
-                ? explosions.DetonateCombo(group, tapped.Position)
-                : explosions.Detonate(tapped);
-        }
-
-        private BlastResult TryBlast(Cube tappedCube, GridPosition cell)
-        {
-            var group = CubeGroupFinder.FindGroup(Board, tappedCube);
-            if (group.Count < MinBlastGroupSize)
-                return null;
-
-            foreach (var cube in group)
-                Board.Remove(cube);
-
-            // Neighbours are damaged before the special item appears, so it can't take part in its own blast.
-            var (damagedObstacles, clearedObstacles) = BlastDamage.Apply(Board, group, sourceIds.Next());
-
-            SpecialItem createdItem = null;
-            var reward = BlastRewards.ForGroupSize(group.Count);
-            if (reward != BlastReward.None)
+            if (IsWon || MovesLeft == 0 || MoveFinder.HasAvailableMove(Board))
             {
-                createdItem = itemFactory.CreateReward(reward);
-                Board.Place(createdItem, cell);
+                moves = Array.Empty<ItemMove>();
+                return false;
             }
 
-            return new BlastResult(cell, group, createdItem, damagedObstacles, clearedObstacles);
+            moves = Shuffler.Shuffle(Board, random);
+            return true;
         }
     }
 }

@@ -29,9 +29,10 @@ namespace DreamCase.Meta
 
             var level = LevelLoader.Load(progress.CurrentLevel);
 
-            var itemFactory = new ItemFactory(new System.Random());
+            var random = new System.Random();
+            var itemFactory = new ItemFactory(random);
             var board = new BoardBuilder(itemFactory).Build(level);
-            var session = new LevelSession(board, level.move_count, itemFactory);
+            var session = new LevelSession(board, level.move_count, itemFactory, random);
 
             var endFlow = new LevelEndFlow(progress, level.level_number, celebration, failPopup);
             levelController.Ended += endFlow.OnLevelEnded;

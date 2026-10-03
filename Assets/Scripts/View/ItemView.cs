@@ -79,6 +79,10 @@ namespace DreamCase.View
             return transform.DOScale(fullScale, duration).SetEase(Ease.OutBack);
         }
 
+        /// <summary>Jumps along an arc to a new cell, for a shuffle.</summary>
+        public Tween PlayShuffle(Vector2 target, float arcHeight, float duration) =>
+            transform.DOJump(target, arcHeight, 1, duration).SetEase(Ease.InOutQuad);
+
         /// <summary>Falls to the target speeding up like under gravity, then bounces lightly on landing.</summary>
         public Tween PlayFall(Vector2 target, float duration, float bounceHeight, float bounceDuration) =>
             DOTween.Sequence()

@@ -9,9 +9,9 @@ namespace DreamCase.Core
         /// and never pass through another item; an item that can't fall holds up everything above it.
         /// Falling items are all 1x1, so each column is handled on its own.
         /// </summary>
-        public static IReadOnlyList<ItemFall> Apply(Board board)
+        public static IReadOnlyList<ItemMove> Apply(Board board)
         {
-            var falls = new List<ItemFall>();
+            var falls = new List<ItemMove>();
             for (int x = 0; x < board.Width; x++)
             {
                 // Lowest empty cell an item above could land on; -1 when there is none.
@@ -35,7 +35,7 @@ namespace DreamCase.Core
                     {
                         var target = new GridPosition(x, landingY);
                         board.Move(item, target);
-                        falls.Add(new ItemFall(item, cell, target));
+                        falls.Add(new ItemMove(item, cell, target));
                         // Everything between the target and the old cell is empty, so the next landing spot is right above.
                         landingY++;
                     }

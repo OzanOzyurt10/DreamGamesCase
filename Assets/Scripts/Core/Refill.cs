@@ -8,9 +8,9 @@ namespace DreamCase.Core
         /// Fills the empty cells at the top of each column with new random cubes. Filling stops at the first
         /// occupied cell, so holes under an item that can't fall stay empty. Run it after gravity.
         /// </summary>
-        public static IReadOnlyList<ItemFall> Apply(Board board, ItemFactory factory)
+        public static IReadOnlyList<ItemMove> Apply(Board board, ItemFactory factory)
         {
-            var spawns = new List<ItemFall>();
+            var spawns = new List<ItemMove>();
             for (int x = 0; x < board.Width; x++)
             {
                 int emptyCount = CountEmptyCellsFromTop(board, x);
@@ -21,7 +21,7 @@ namespace DreamCase.Core
                     var cube = factory.CreateRandomCube();
                     var target = new GridPosition(x, y);
                     board.Place(cube, target);
-                    spawns.Add(new ItemFall(cube, new GridPosition(x, y + emptyCount), target));
+                    spawns.Add(new ItemMove(cube, new GridPosition(x, y + emptyCount), target));
                 }
             }
             return spawns;

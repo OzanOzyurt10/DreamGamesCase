@@ -15,6 +15,13 @@ namespace DreamCase.Core.Items
         /// <summary>Whether gravity pulls the item down. Items that don't fall also hold up everything above them.</summary>
         public virtual bool CanFall => true;
 
+        /// <summary>Whether tapping this item right now is a valid move. By default an item can't be tapped.</summary>
+        internal virtual bool CanBeTapped(Board board) => false;
+
+        /// <summary>Resolves a tap on this item. Only called when <see cref="CanBeTapped"/> is true.</summary>
+        internal virtual TapResult Tap(TapContext context) =>
+            throw new System.InvalidOperationException($"{GetType().Name} can't be tapped.");
+
         /// <summary>Applies one damage event. By default an item is not affected.</summary>
         internal virtual DamageOutcome TakeDamage(DamageInfo damage) => DamageOutcome.None;
 
