@@ -6,8 +6,8 @@ using UnityEngine;
 namespace DreamCase.View
 {
     /// <summary>
-    /// Visual of one item. Items with a single fixed sprite (stone, vase, TNT, chalice box) use this
-    /// class as is, with the sprite set on the prefab. Items whose sprite depends on model state override Bind.
+    /// Visual of one item. Items with a single fixed sprite (stone, TNT) use this class as is, with the sprite
+    /// set on the prefab. Items whose look depends on model state (cube, rocket, vase, chalice box) override Bind.
     /// </summary>
     [RequireComponent(typeof(SpriteRenderer))]
     public class ItemView : MonoBehaviour
@@ -18,6 +18,9 @@ namespace DreamCase.View
         [Tooltip("Played when the item leaves the board.")]
         [SerializeField] private ParticleSystem breakEffect;
 
+        /// <summary>The scale set by FitWidth: the size the view returns to after any squash.</summary>
+        private Vector3 fittedScale;
+
         protected SpriteRenderer SpriteRenderer { get; private set; }
 
         /// <summary>The effect for a hit the item survives, or null for none.</summary>
@@ -25,9 +28,6 @@ namespace DreamCase.View
 
         /// <summary>The effect for the item leaving the board, or null for none.</summary>
         public virtual ParticleSystem BreakEffect => breakEffect;
-
-        /// <summary>The scale set by FitWidth: the size the view returns to after any squash.</summary>
-        private Vector3 fittedScale;
 
         protected virtual void Awake()
         {
