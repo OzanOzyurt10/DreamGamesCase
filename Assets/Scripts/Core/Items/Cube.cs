@@ -10,6 +10,7 @@ namespace DreamCase.Core.Items
         }
 
         // A neighbouring blast doesn't affect cubes; only explosions clear them.
-        internal override bool TakeDamage(DamageInfo damage) => damage.Type == DamageType.Explosion;
+        internal override DamageOutcome TakeDamage(DamageInfo damage) =>
+            damage.Type == DamageType.Explosion ? DamageOutcome.Cleared : DamageOutcome.None;
     }
 }

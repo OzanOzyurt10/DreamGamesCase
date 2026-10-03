@@ -77,6 +77,9 @@ namespace DreamCase.Core
             foreach (var cube in group)
                 Board.Remove(cube);
 
+            // Neighbours are damaged before the special item appears, so it can't take part in its own blast.
+            var (damagedObstacles, clearedObstacles) = BlastDamage.Apply(Board, group, sourceIds.Next());
+
             SpecialItem createdItem = null;
             var reward = BlastRewards.ForGroupSize(group.Count);
             if (reward != BlastReward.None)
@@ -85,7 +88,7 @@ namespace DreamCase.Core
                 Board.Place(createdItem, cell);
             }
 
-            return new BlastResult(cell, group, createdItem);
+            return new BlastResult(cell, group, createdItem, damagedObstacles, clearedObstacles);
         }
     }
 }

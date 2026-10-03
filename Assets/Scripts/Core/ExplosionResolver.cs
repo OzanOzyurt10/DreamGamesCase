@@ -26,7 +26,9 @@ namespace DreamCase.Core
         private readonly Board board;
         private readonly DamageSourceIds sourceIds;
         private readonly SortedDictionary<int, List<Hit>> hitsByTick = new SortedDictionary<int, List<Hit>>();
-        private readonly List<ClearedItem> cleared = new List<ClearedItem>();
+        private readonly HashSet<(int sourceId, GridPosition cell)> scheduledHits = new HashSet<(int, GridPosition)>();
+        private readonly List<TimedItem> cleared = new List<TimedItem>();
+        private readonly List<TimedItem> damaged = new List<TimedItem>();
         private readonly List<RocketLaunch> rockets = new List<RocketLaunch>();
 
         public ExplosionResolver(Board board, DamageSourceIds sourceIds)
@@ -103,11 +105,18 @@ namespace DreamCase.Core
                 foreach (var hit in hits)
                     Apply(hit, tick);
             }
-            return new ExplosionResult(combo, cleared, rockets);
+            return new ExplosionResult(combo, cleared, damaged, rockets);
         }
 
+        /// <summary>
+        /// Plans a hit. An explosion affects each cell at most once, so where a combo's rocket lines cross,
+        /// the first planned hit counts and the other is dropped.
+        /// </summary>
         private void Schedule(int tick, GridPosition cell, int sourceId)
         {
+            if (!scheduledHits.Add((sourceId, cell)))
+                return;
+
             if (!hitsByTick.TryGetValue(tick, out var hits))
             {
                 hits = new List<Hit>();
@@ -119,14 +128,24 @@ namespace DreamCase.Core
         private void Apply(Hit hit, int tick)
         {
             var item = board.GetItem(hit.Cell);
-            if (item != null && item.TakeDamage(new DamageInfo(DamageType.Explosion, hit.SourceId)))
-                Clear(item, tick);
+            if (item == null)
+                return;
+
+            switch (item.TakeDamage(new DamageInfo(DamageType.Explosion, hit.SourceId, affectedCells: 1)))
+            {
+                case DamageOutcome.Damaged:
+                    damaged.Add(new TimedItem(item, tick));
+                    break;
+                case DamageOutcome.Cleared:
+                    Clear(item, tick);
+                    break;
+            }
         }
 
         private void Clear(Item item, int tick)
         {
             board.Remove(item);
-            cleared.Add(new ClearedItem(item, tick));
+            cleared.Add(new TimedItem(item, tick));
             item.OnCleared(this, tick);
         }
     }

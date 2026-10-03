@@ -37,6 +37,9 @@ namespace DreamCase.View
 
         [SerializeField] private float specialAppearDuration = 0.2f;
 
+        [Tooltip("Squash played on an obstacle that takes damage and survives.")]
+        [SerializeField] private float hitDuration = 0.2f;
+
         [Tooltip("Real time of one explosion tick: a rocket half crosses one cell per tick.")]
         [SerializeField] private float explosionTickDuration = 0.06f;
 
@@ -75,7 +78,7 @@ namespace DreamCase.View
 
         /// <summary>
         /// Small groups shrink away. Groups that earned a special item slide into the tapped cell first,
-        /// then the special item pops up there. Blasted views go back to the pool.
+        /// then the special item pops up there. Neighbouring obstacles react at once. Blasted views go back to the pool.
         /// </summary>
         public Tween AnimateBlast(BlastResult result)
         {
@@ -87,8 +90,14 @@ namespace DreamCase.View
             foreach (var cube in result.BlastedCubes)
             {
                 var view = Detach(cube, removed);
-                sequence.Join(merging ? view.PlayMerge(tappedCellCenter, mergeDuration) : view.PlayBlast(blastDuration));
+                sequence.Insert(0f, merging ? view.PlayMerge(tappedCellCenter, mergeDuration) : view.PlayBlast(blastDuration));
             }
+
+            foreach (var obstacle in result.DamagedObstacles)
+                PlayDamage(sequence, obstacle, 0f);
+
+            foreach (var obstacle in result.ClearedObstacles)
+                sequence.Insert(0f, Detach(obstacle, removed).PlayBlast(blastDuration));
 
             sequence.AppendCallback(() => ReleaseAll(removed));
 
@@ -127,6 +136,10 @@ namespace DreamCase.View
                     sequence.Insert(timelineStart + launch.Tick * explosionTickDuration, LaunchRocketHalf(launch.Origin, direction));
             }
 
+            // Damage first: an item can be damaged on one tick and cleared on a later one.
+            foreach (var hit in result.Damaged)
+                PlayDamage(sequence, hit.Item, timelineStart + hit.Tick * explosionTickDuration);
+
             foreach (var clear in result.Cleared)
             {
                 var view = Detach(clear.Item, removed);
@@ -159,6 +172,18 @@ namespace DreamCase.View
                 sequence.Join(PlayFall(CreateView(spawn.Item, layout.CellCenter(spawn.From)), spawn));
 
             return sequence;
+        }
+
+        /// <summary>
+        /// At the given time, redraws the item from its model state (cracked vase, open door, fewer chalices)
+        /// and plays a hit squash. The model already holds the state after the whole turn, so several hits in
+        /// one turn show that final state from the first hit on.
+        /// </summary>
+        private void PlayDamage(Sequence sequence, Item item, float time)
+        {
+            var view = views[item];
+            sequence.InsertCallback(time, () => view.Bind(item));
+            sequence.Insert(time, view.PlayHit(hitDuration));
         }
 
         /// <summary>Unlinks an item's view so it can play its last animation; release it with ReleaseAll afterwards.</summary>

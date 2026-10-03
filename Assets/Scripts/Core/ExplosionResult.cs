@@ -8,13 +8,23 @@ namespace DreamCase.Core
         /// <summary>Set when the tapped item exploded as a combo; the timeline starts after the merge.</summary>
         public ComboMerge Combo { get; }
 
-        public IReadOnlyList<ClearedItem> Cleared { get; }
+        /// <summary>Items removed from the board, each on the tick it was hit.</summary>
+        public IReadOnlyList<TimedItem> Cleared { get; }
+
+        /// <summary>Items that took damage but stayed on the board.</summary>
+        public IReadOnlyList<TimedItem> Damaged { get; }
+
         public IReadOnlyList<RocketLaunch> Rockets { get; }
 
-        public ExplosionResult(ComboMerge combo, IReadOnlyList<ClearedItem> cleared, IReadOnlyList<RocketLaunch> rockets)
+        public ExplosionResult(
+            ComboMerge combo,
+            IReadOnlyList<TimedItem> cleared,
+            IReadOnlyList<TimedItem> damaged,
+            IReadOnlyList<RocketLaunch> rockets)
         {
             Combo = combo;
             Cleared = cleared;
+            Damaged = damaged;
             Rockets = rockets;
         }
     }

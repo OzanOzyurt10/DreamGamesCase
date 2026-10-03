@@ -14,7 +14,10 @@ namespace DreamCase.View
     {
         protected SpriteRenderer SpriteRenderer { get; private set; }
 
-        private void Awake()
+        /// <summary>The scale set by FitWidth: the size the view returns to after any squash.</summary>
+        private Vector3 fittedScale;
+
+        protected virtual void Awake()
         {
             SpriteRenderer = GetComponent<SpriteRenderer>();
             // Only visible inside the board's mask, so new cubes appear to slide in from the board's top edge.
@@ -35,10 +38,20 @@ namespace DreamCase.View
         public void FitWidth(float worldWidth)
         {
             float spriteWidth = SpriteRenderer.sprite.bounds.size.x;
-            transform.localScale = Vector3.one * (worldWidth / spriteWidth);
+            fittedScale = Vector3.one * (worldWidth / spriteWidth);
+            transform.localScale = fittedScale;
         }
 
-        public void SetSortingOrder(int order) => SpriteRenderer.sortingOrder = order;
+        public virtual void SetSortingOrder(int order) => SpriteRenderer.sortingOrder = order;
+
+        /// <summary>
+        /// A short swell when the item takes damage but survives. It always ends at the fitted size, so
+        /// overlapping hits can't leave the view bigger than it should be.
+        /// </summary>
+        public Tween PlayHit(float duration) =>
+            DOTween.Sequence()
+                .Append(transform.DOScale(fittedScale * 1.15f, duration * 0.3f).SetEase(Ease.OutQuad))
+                .Append(transform.DOScale(fittedScale, duration * 0.7f).SetEase(Ease.OutBack));
 
         /// <summary>Shrinks the view to nothing, with a small swell first.</summary>
         public Tween PlayBlast(float duration) => transform.DOScale(0f, duration).SetEase(Ease.InBack);

@@ -16,9 +16,9 @@ namespace DreamCase.View
         [SerializeField] private CubeView cubePrefab;
         [SerializeField] private RocketView rocketPrefab;
         [SerializeField] private ItemView tntPrefab;
-        [SerializeField] private ItemView vasePrefab;
+        [SerializeField] private VaseView vasePrefab;
         [SerializeField] private ItemView stonePrefab;
-        [SerializeField] private ItemView chaliceBoxPrefab;
+        [SerializeField] private ChaliceBoxView chaliceBoxPrefab;
 
         private Dictionary<Type, ObjectPool<ItemView>> pools;
 

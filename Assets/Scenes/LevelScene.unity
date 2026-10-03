@@ -163,6 +163,7 @@ MonoBehaviour:
   blastDuration: 0.2
   mergeDuration: 0.25
   specialAppearDuration: 0.2
+  hitDuration: 0.2
   explosionTickDuration: 0.06
   fallDurationPerCell: 0.12
   landingBounceInCells: 0.08
@@ -200,9 +201,9 @@ MonoBehaviour:
   cubePrefab: {fileID: 3762552934307326449, guid: b03b13a3466ef914887a1eeec290e36b, type: 3}
   rocketPrefab: {fileID: 5894735339045456224, guid: 2f3271130cfbf68479ec801ecc2da47f, type: 3}
   tntPrefab: {fileID: 164764080023192412, guid: c02597c3cee637048b03b9bf20c3aaa4, type: 3}
-  vasePrefab: {fileID: 7910408483834347958, guid: 1906fb2f8fabc734a9c8a13bdd06692b, type: 3}
+  vasePrefab: {fileID: -8505447810431207063, guid: 1906fb2f8fabc734a9c8a13bdd06692b, type: 3}
   stonePrefab: {fileID: 1880679741988490323, guid: 35f6e075f7917284499d77666f497847, type: 3}
-  chaliceBoxPrefab: {fileID: 1544117895964967462, guid: d46b69fa874419b4f975b60c7c2469c6, type: 3}
+  chaliceBoxPrefab: {fileID: -4738778678918868952, guid: d46b69fa874419b4f975b60c7c2469c6, type: 3}
 --- !u!114 &7774160
 MonoBehaviour:
   m_ObjectHideFlags: 0

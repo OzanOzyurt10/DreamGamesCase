@@ -12,11 +12,24 @@ namespace DreamCase.Core
         /// <summary>The special item created on the tapped cell, or null if the group was too small.</summary>
         public SpecialItem CreatedItem { get; }
 
-        public BlastResult(GridPosition tappedCell, IReadOnlyList<Cube> blastedCubes, SpecialItem createdItem)
+        /// <summary>Neighbouring obstacles that took damage but stayed on the board.</summary>
+        public IReadOnlyList<Item> DamagedObstacles { get; }
+
+        /// <summary>Neighbouring obstacles the blast destroyed; they are already off the board.</summary>
+        public IReadOnlyList<Item> ClearedObstacles { get; }
+
+        public BlastResult(
+            GridPosition tappedCell,
+            IReadOnlyList<Cube> blastedCubes,
+            SpecialItem createdItem,
+            IReadOnlyList<Item> damagedObstacles,
+            IReadOnlyList<Item> clearedObstacles)
         {
             TappedCell = tappedCell;
             BlastedCubes = blastedCubes;
             CreatedItem = createdItem;
+            DamagedObstacles = damagedObstacles;
+            ClearedObstacles = clearedObstacles;
         }
     }
 }
