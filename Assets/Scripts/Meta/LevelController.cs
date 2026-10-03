@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using DG.Tweening;
 using DreamCase.Core;
@@ -7,8 +8,9 @@ using UnityEngine;
 namespace DreamCase.Meta
 {
     /// <summary>
-    /// Runs the level's turn loop as a state machine. The model resolves a tap instantly; this class
-    /// then lets the view play the result and accepts new taps only when the board is idle.
+    /// Runs the level's turn loop as a state machine: Idle → Resolving → Falling → CheckEnd → Idle, or Ended.
+    /// The model resolves a tap instantly; this class lets the view play the result and accepts new taps only
+    /// when the board is idle.
     /// </summary>
     public sealed class LevelController : MonoBehaviour
     {
@@ -17,21 +19,29 @@ namespace DreamCase.Meta
             Idle,
             Resolving,
             Falling,
+            CheckEnd,
+            Ended,
         }
+
+        /// <summary>Raised once, when the level is won (true) or lost (false).</summary>
+        public event Action<bool> Ended;
 
         private LevelSession session;
         private BoardView boardView;
         private BoardInput boardInput;
+        private LevelHud hud;
         private State state;
 
         /// <summary>Method injection: MonoBehaviours cannot take constructor arguments.</summary>
-        public void Initialize(LevelSession session, BoardView boardView, BoardInput boardInput)
+        public void Initialize(LevelSession session, BoardView boardView, BoardInput boardInput, LevelHud hud)
         {
             this.session = session;
             this.boardView = boardView;
             this.boardInput = boardInput;
+            this.hud = hud;
 
             boardView.Build(session.Board);
+            hud.Initialize(session);
             RefreshHints();
             boardInput.CellTapped += OnCellTapped;
             state = State.Idle;
@@ -56,13 +66,31 @@ namespace DreamCase.Meta
         private IEnumerator PlayTurn(TapResult result)
         {
             state = State.Resolving;
+            hud.RefreshMoves(session);
             var resolving = result.Blast != null
                 ? boardView.AnimateBlast(result.Blast)
                 : boardView.AnimateExplosion(result.Explosion);
             yield return resolving.WaitForCompletion();
 
+            // The model already knows the new goal counts; show them once the obstacles have visibly broken.
+            hud.RefreshGoals(session);
+
             state = State.Falling;
             yield return boardView.AnimateFalls(session.Settle()).WaitForCompletion();
+
+            state = State.CheckEnd;
+            CheckEnd();
+        }
+
+        /// <summary>Win and loss are only decided here, after the board has fully settled.</summary>
+        private void CheckEnd()
+        {
+            if (session.IsWon || session.IsLost)
+            {
+                state = State.Ended;
+                Ended?.Invoke(session.IsWon);
+                return;
+            }
 
             RefreshHints();
             state = State.Idle;

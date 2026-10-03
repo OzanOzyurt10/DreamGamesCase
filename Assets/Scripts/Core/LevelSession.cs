@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DreamCase.Core.Items;
 
 namespace DreamCase.Core
@@ -14,12 +17,24 @@ namespace DreamCase.Core
         public Board Board { get; }
         public int MovesLeft { get; private set; }
 
+        /// <summary>Every obstacle is cleared. Only meaningful once the board has settled.</summary>
+        public bool IsWon => !Board.Items.OfType<Obstacle>().Any();
+
+        /// <summary>No moves left and obstacles remain. Only meaningful once the board has settled.</summary>
+        public bool IsLost => MovesLeft == 0 && !IsWon;
+
         public LevelSession(Board board, int moveCount, ItemFactory itemFactory)
         {
             Board = board;
             MovesLeft = moveCount;
             this.itemFactory = itemFactory;
         }
+
+        /// <summary>How many obstacles of each type are still on the board. Cleared types are left out.</summary>
+        public IReadOnlyDictionary<Type, int> RemainingObstacles() =>
+            Board.Items.OfType<Obstacle>()
+                .GroupBy(obstacle => obstacle.GetType())
+                .ToDictionary(group => group.Key, group => group.Count());
 
         /// <summary>
         /// Applies a tap to the board. Returns null if the tap is not a valid move; then nothing changes

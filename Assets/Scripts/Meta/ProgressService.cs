@@ -20,6 +20,15 @@ namespace DreamCase.Meta
 
         public void SetFinished() => Save(FinishedValue);
 
+        /// <summary>Moves the player past the level they just won; after the last level, everything is finished.</summary>
+        public void CompleteLevel(int levelNumber)
+        {
+            if (levelNumber >= LevelCount)
+                SetFinished();
+            else
+                SetCurrentLevel(levelNumber + 1);
+        }
+
         private static void Save(int value)
         {
             PlayerPrefs.SetInt(CurrentLevelKey, value);
