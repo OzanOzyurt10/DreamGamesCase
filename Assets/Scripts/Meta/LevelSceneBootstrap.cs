@@ -13,6 +13,8 @@ namespace DreamCase.Meta
         [SerializeField] private BoardInput boardInput;
         [SerializeField] private LevelController levelController;
         [SerializeField] private LevelHud hud;
+        [SerializeField] private CelebrationView celebration;
+        [SerializeField] private FailPopupView failPopup;
 
         private void Start()
         {
@@ -23,7 +25,7 @@ namespace DreamCase.Meta
             var board = new BoardBuilder(itemFactory).Build(level);
             var session = new LevelSession(board, level.move_count, itemFactory);
 
-            var endFlow = new LevelEndFlow(progress, level.level_number);
+            var endFlow = new LevelEndFlow(progress, level.level_number, celebration, failPopup);
             levelController.Ended += endFlow.OnLevelEnded;
             levelController.Initialize(session, boardView, boardInput, hud);
         }
